@@ -24,21 +24,27 @@ def run_check() -> int:
         log("👉 Abra o arquivo .env, cole a URL do seu webhook e tente novamente.")
         return 0
 
-    log(f"🔍 Consultando novos brindes (Plataforma: {config.PLATFORM_FILTER}, Tipo: {config.TYPE_FILTER})...")
+    log(f"🔍 Consultando novos brindes na GamerPower API...")
     giveaways = gamerpower.fetch_giveaways(
         platform=config.PLATFORM_FILTER,
         giveaway_type=config.TYPE_FILTER
     )
 
     if not giveaways:
-        log("ℹ️ Nenhum jogo ou brinde ativo encontrado no momento.")
+        log("ℹ️ Nenhum brinde ativo encontrado na API no momento.")
         return 0
 
-    log(f"📦 Total de brindes ativos encontrados na API: {len(giveaways)}")
+    # Aplica os filtros refinados: apenas Steam, Epic Games, GOG e liberados no Brasil
+    eligible = [g for g in giveaways if gamerpower.is_giveaway_eligible(g)]
+    log(f"📦 Total de itens na API: {len(giveaways)} | 🎮 Elegíveis (Steam/Epic/GOG no Brasil): {len(eligible)}")
+
+    if not eligible:
+        log("ℹ️ Nenhum jogo das lojas permitidas (Steam, Epic, GOG) elegível no momento.")
+        return 0
 
     new_count = 0
     # Processa os brindes na ordem do mais antigo para o mais novo
-    for item in reversed(giveaways):
+    for item in reversed(eligible):
         giveaway_id = item.get("id")
         title = item.get("title", "Sem título")
 
@@ -103,10 +109,12 @@ def main():
 
     # Modo contínuo (loop infinito)
     interval_seconds = config.CHECK_INTERVAL_MINUTES * 60
+    stores_str = ", ".join(config.ALLOWED_STORES).upper()
     log("==================================================")
     log("  🎮 FreeStuff GameVox Bot iniciado!")
     log(f"  ⏱️ Intervalo de checagem: a cada {config.CHECK_INTERVAL_MINUTES} minutos")
-    log(f"  🎯 Plataforma: {config.PLATFORM_FILTER} | Tipo: {config.TYPE_FILTER}")
+    log(f"  🏬 Lojas permitidas: {stores_str}")
+    log(f"  🇧🇷 Apenas jogos disponíveis no Brasil: {'SIM' if config.ONLY_BRAZIL else 'NÃO'}")
     log(f"  📊 Jogos no histórico: {database.get_total_notified()}")
     log("  Pressione CTRL+C para encerrar o bot a qualquer momento.")
     log("==================================================")

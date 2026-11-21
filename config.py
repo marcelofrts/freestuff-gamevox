@@ -6,7 +6,6 @@ Carrega variáveis de ambiente de um arquivo .env ou do sistema.
 import os
 from pathlib import Path
 
-# Carregador simples de .env nativo (caso python-dotenv não esteja instalado)
 def load_dotenv_fallback(env_path: Path):
     if not env_path.exists():
         return
@@ -24,7 +23,6 @@ def load_dotenv_fallback(env_path: Path):
     except Exception:
         pass
 
-# Tenta carregar com python-dotenv, ou usa o fallback nativo
 ENV_FILE = Path(__file__).resolve().parent / ".env"
 try:
     from dotenv import load_dotenv
@@ -39,6 +37,13 @@ PLATFORM_FILTER = os.getenv("PLATFORM_FILTER", "pc").strip().lower()
 TYPE_FILTER = os.getenv("TYPE_FILTER", "game").strip().lower()
 NOTIFY_ROLE = os.getenv("NOTIFY_ROLE", "").strip()
 
-# Caminho do banco de dados SQLite local
+# Lojas permitidas (apenas Steam, Epic Games e GOG por padrão)
+raw_stores = os.getenv("ALLOWED_STORES", "steam,epic games,gog")
+ALLOWED_STORES = [s.strip().lower() for s in raw_stores.split(",") if s.strip()]
+
+# Filtro de região (apenas jogos que podem ser resgatados/baixados no Brasil)
+ONLY_BRAZIL = os.getenv("ONLY_BRAZIL", "true").strip().lower() in ("true", "1", "yes")
+
+# Caminho do banco/histórico de dados
 DATA_DIR = Path(__file__).resolve().parent / "data"
 DATABASE_PATH = DATA_DIR / "giveaways.db"

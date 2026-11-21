@@ -4,6 +4,7 @@ Módulo responsável por consultar a API do GamerPower para obter jogos gratuito
 
 import json
 from typing import List, Dict, Any, Optional
+import config
 
 try:
     import requests
@@ -14,13 +15,50 @@ except ImportError:
 
 API_BASE_URL = "https://www.gamerpower.com/api"
 
+# Termos que indicam bloqueio regional incompatível com o Brasil
+BLOCKED_REGIONS = [
+    "us only", "usa only", "north america only", "na only",
+    "europe only", "eu only", "asia only", "japan only",
+    "not available in brazil", "except brazil", "indisponível no brasil",
+    "bloqueado no brasil"
+]
+
+def is_giveaway_eligible(giveaway: Dict[str, Any]) -> bool:
+    """
+    Verifica se o jogo atende a todos os critérios:
+    1. Apenas jogos completos (ignora skins/DLCs soltas se TYPE_FILTER for 'game').
+    2. Apenas das lojas configuradas (Steam, Epic Games Store, GOG).
+    3. Disponível no Brasil (sem restrições regionais para US/EU apenas).
+    """
+    platforms = giveaway.get("platforms", "").lower()
+    title = giveaway.get("title", "").lower()
+    desc = giveaway.get("description", "").lower()
+    inst = giveaway.get("instructions", "").lower()
+    g_type = giveaway.get("type", "").lower()
+
+    # 1. Filtro de tipo (ignora skins/loot/itens in-game)
+    if config.TYPE_FILTER != "all" and g_type != config.TYPE_FILTER:
+        return False
+
+    # 2. Filtro de lojas permitidas (Steam, Epic Games, GOG)
+    if config.ALLOWED_STORES:
+        has_allowed_store = any(
+            store in platforms or store in title for store in config.ALLOWED_STORES
+        )
+        if not has_allowed_store:
+            return False
+
+    # 3. Filtro de bloqueio regional (apenas o que pode ser baixado no Brasil)
+    if config.ONLY_BRAZIL:
+        full_text = f"{title} {desc} {inst}"
+        if any(region in full_text for region in BLOCKED_REGIONS):
+            return False
+
+    return True
+
 def fetch_giveaways(platform: str = "pc", giveaway_type: str = "game") -> List[Dict[str, Any]]:
     """
     Busca jogos gratuitos ativos na GamerPower API.
-    
-    :param platform: 'pc', 'steam', 'epic-games-store', 'gog', 'all', etc.
-    :param giveaway_type: 'game', 'loot', 'beta', ou 'all'
-    :return: Lista de dicionários contendo os dados dos brindes/jogos.
     """
     params = []
     if platform and platform != "all":
@@ -42,7 +80,6 @@ def fetch_giveaways(platform: str = "pc", giveaway_type: str = "game") -> List[D
                 data = response.json()
                 if isinstance(data, list):
                     return data
-                # A API retorna status 0 caso não haja resultados
                 return []
             else:
                 print(f"[Aviso] API GamerPower retornou status {response.status_code}")
@@ -59,19 +96,3 @@ def fetch_giveaways(platform: str = "pc", giveaway_type: str = "game") -> List[D
     except Exception as e:
         print(f"[Erro] Falha ao consultar API da GamerPower: {e}")
         return []
-
-def get_giveaway_by_id(giveaway_id: int) -> Optional[Dict[str, Any]]:
-    """Obtém detalhes de um giveaway específico pelo ID."""
-    url = f"{API_BASE_URL}/giveaway?id={giveaway_id}"
-    headers = {"User-Agent": "FreeStuff-GameVox-Bot/1.0"}
-    try:
-        if HAS_REQUESTS:
-            res = requests.get(url, headers=headers, timeout=15)
-            return res.json() if res.status_code == 200 else None
-        else:
-            req = urllib.request.Request(url, headers=headers)
-            with urllib.request.urlopen(req, timeout=15) as res:
-                return json.loads(res.read().decode("utf-8")) if res.status == 200 else None
-    except Exception as e:
-        print(f"[Erro] Falha ao buscar detalhes do giveaway #{giveaway_id}: {e}")
-        return None
