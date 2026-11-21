@@ -1,0 +1,47 @@
+name: Monitorar Jogos Grátis (GameVox)
+
+on:
+  schedule:
+    # Executa automaticamente a cada 30 minutos (cron UTC)
+    - cron: '*/30 * * * *'
+  # Permite que você clique em um botão no GitHub para rodar manualmente a qualquer momento
+  workflow_dispatch:
+
+# Permissão para o GitHub salvar o arquivo de histórico caso encontre jogos novos
+permissions:
+  contents: write
+
+jobs:
+  check-and-notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Baixar código do repositório
+        uses: actions/checkout@v4
+
+      - name: 🐍 Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: 📦 Instalar dependências
+        run: |
+          pip install -r requirements.txt
+
+      - name: 🎮 Verificar jogos grátis e notificar GameVox
+        env:
+          GAMEVOX_WEBHOOK_URL: ${{ secrets.GAMEVOX_WEBHOOK_URL }}
+          CHECK_INTERVAL_MINUTES: 30
+          PLATFORM_FILTER: 'pc'
+          TYPE_FILTER: 'game'
+          NOTIFY_ROLE: ''
+        run: |
+          python main.py --once
+
+      - name: 💾 Salvar histórico de jogos enviados
+        run: |
+          git config --global user.name "FreeStuff-Bot"
+          git config --global user.email "bot@gamevox.local"
+          git add data/notified.json
+          # Só faz commit se realmente houver novos jogos adicionados
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: atualizar histórico de jogos notificados [skip ci]" && git push)
