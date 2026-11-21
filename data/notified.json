@@ -1,4 +1,97 @@
 {
-  "notified_ids": [],
-  "games": []
+  "notified_ids": [
+    2204,
+    3446,
+    3716,
+    3316,
+    3324,
+    3322,
+    3328,
+    3331,
+    3340,
+    3830,
+    3346,
+    3852,
+    3853
+  ],
+  "games": [
+    {
+      "id": 2204,
+      "title": "Dual Chroma: Academy Carols (itch.io) Giveaway",
+      "worth": "$2.00",
+      "platforms": "PC, Itch.io, DRM-Free"
+    },
+    {
+      "id": 3446,
+      "title": "GigaBash (Stove) Giveaway",
+      "worth": "$24.99",
+      "platforms": "PC"
+    },
+    {
+      "id": 3716,
+      "title": "Dwarven Realms (Steam) Key Giveaway",
+      "worth": "$9.99",
+      "platforms": "PC, Steam"
+    },
+    {
+      "id": 3316,
+      "title": "Leaper (IndieGala) Giveaway",
+      "worth": "$4.99",
+      "platforms": "PC, DRM-Free"
+    },
+    {
+      "id": 3324,
+      "title": "Battle Ram (IndieGala) Giveaway",
+      "worth": "$29.99",
+      "platforms": "PC, DRM-Free"
+    },
+    {
+      "id": 3322,
+      "title": "Sausage Hunter (Indiegala) Giveaway",
+      "worth": "$29.99",
+      "platforms": "PC, DRM-Free"
+    },
+    {
+      "id": 3328,
+      "title": "Best Plumber (IndieGala) Giveaway",
+      "worth": "$29.99",
+      "platforms": "PC, DRM-Free"
+    },
+    {
+      "id": 3331,
+      "title": "Last Room (IndieGala) Giveaway",
+      "worth": "$29.99",
+      "platforms": "PC, DRM-Free"
+    },
+    {
+      "id": 3340,
+      "title": "ANCIENT EVIL (IndieGala) Giveaway",
+      "worth": "$4.99",
+      "platforms": "PC, DRM-Free"
+    },
+    {
+      "id": 3830,
+      "title": "Free itch.io Games Bundle",
+      "worth": "$384.00",
+      "platforms": "PC, Itch.io, DRM-Free"
+    },
+    {
+      "id": 3346,
+      "title": "My Darkest Witch (IndieGala) Giveaway",
+      "worth": "$4.99",
+      "platforms": "PC, DRM-Free"
+    },
+    {
+      "id": 3852,
+      "title": "Contractor: The Clean Up Part 2 (Epic Games) Giveaway",
+      "worth": "$4.99",
+      "platforms": "PC, Epic Games Store"
+    },
+    {
+      "id": 3853,
+      "title": "Mark of the Deep (Epic Games) Giveaway",
+      "worth": "$19.99",
+      "platforms": "PC, Epic Games Store"
+    }
+  ]
 }
