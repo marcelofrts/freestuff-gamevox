@@ -4,6 +4,7 @@ Como o GameVox possui compatibilidade com a API do Discord, a estrutura do Embed
 """
 
 import json
+from datetime import datetime, timezone, timedelta
 from typing import Dict, Any, Tuple
 
 try:
@@ -23,6 +24,21 @@ def detect_store_color(platforms: str, title: str) -> int:
     elif "gog" in text:
         return 0x862295  # Roxo GOG
     return 0x10B981      # Verde Esmeralda (Padrão 100% OFF)
+
+def format_end_date(end_date_str: str) -> str:
+    """Formata a data de término no Horário de Brasília e com countdown do Discord/GameVox."""
+    if not end_date_str or end_date_str.strip().upper() in ("N/A", "N/D", "NONE"):
+        return "⏳ Por tempo limitado (ou até esgotarem as chaves)"
+    try:
+        # GamerPower fornece as datas em UTC no formato "YYYY-MM-DD HH:MM:SS"
+        dt_utc = datetime.strptime(end_date_str.strip(), "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
+        fuso_br = timezone(timedelta(hours=-3))
+        dt_br = dt_utc.astimezone(fuso_br)
+        unix_ts = int(dt_utc.timestamp())
+        data_br = dt_br.strftime("%d/%m/%Y às %H:%M")
+        return f"📅 Até **{data_br} (Brasília)** (<t:{unix_ts}:R>)"
+    except Exception:
+        return f"⏳ Até {end_date_str}"
 
 def format_role_mention(role: str) -> str:
     """Formata a menção de cargo para o padrão correto do GameVox/Discord."""
@@ -52,10 +68,7 @@ def build_embed(giveaway: Dict[str, Any]) -> Dict[str, Any]:
     if len(description) > 300:
         description = description[:297] + "..."
 
-    validade_str = "Por tempo limitado"
-    if end_date and end_date.lower() != "n/d":
-        validade_str = end_date
-
+    validade_str = format_end_date(end_date)
     preco_formatado = f"~~{worth}~~ **100% GRÁTIS**" if worth and worth != "N/A" else "**100% GRÁTIS**"
     color = detect_store_color(platforms, title)
 
