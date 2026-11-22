@@ -51,7 +51,7 @@ def run_check() -> int:
         if not giveaway_id:
             continue
 
-        if database.is_giveaway_notified(giveaway_id):
+        if not database.should_notify(item):
             continue
 
         log(f"🆕 Novo jogo encontrado: {title} (ID #{giveaway_id})")
