@@ -1,3 +1,24 @@
 {
-  "games": {}
+  "games": {
+    "3716": {
+      "id": 3716,
+      "title": "Dwarven Realms (Steam) Key Giveaway",
+      "normalized_title": "dwarven realms key",
+      "worth": "$9.99",
+      "platforms": "PC, Steam",
+      "published_date": "2026-07-16 13:15:06",
+      "end_date": "N/A",
+      "last_notified_at": "2026-11-22 00:48:29"
+    },
+    "3853": {
+      "id": 3853,
+      "title": "Mark of the Deep (Epic Games) Giveaway",
+      "normalized_title": "mark of the deep",
+      "worth": "$19.99",
+      "platforms": "PC, Epic Games Store",
+      "published_date": "2026-11-19 11:00:14",
+      "end_date": "2026-11-26 23:59:00",
+      "last_notified_at": "2026-11-22 00:48:31"
+    }
+  }
 }
