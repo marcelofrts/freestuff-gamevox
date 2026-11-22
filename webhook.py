@@ -26,38 +26,32 @@ def detect_store_color(platforms: str, title: str) -> int:
     return 0x10B981      # Verde Esmeralda (Padrão 100% OFF)
 
 def format_end_date(end_date_str: str) -> str:
-    """Formata a data de término no Horário de Brasília e com countdown do Discord/GameVox."""
+    """Formata a data de término no Horário de Brasília de forma limpa para o GameVox."""
     if not end_date_str or end_date_str.strip().upper() in ("N/A", "N/D", "NONE"):
-        return "⏳ Por tempo limitado (ou até esgotarem as chaves)"
+        return "Por tempo limitado"
     try:
-        # GamerPower fornece as datas em UTC no formato "YYYY-MM-DD HH:MM:SS"
         dt_utc = datetime.strptime(end_date_str.strip(), "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
         fuso_br = timezone(timedelta(hours=-3))
         dt_br = dt_utc.astimezone(fuso_br)
-        unix_ts = int(dt_utc.timestamp())
-        data_br = dt_br.strftime("%d/%m/%Y às %H:%M")
-        return f"📅 Até **{data_br} (Brasília)** (<t:{unix_ts}:R>)"
+        return dt_br.strftime("Até %d/%m/%Y às %H:%M (Horário de Brasília)")
     except Exception:
-        return f"⏳ Até {end_date_str}"
+        return f"Até {end_date_str}"
 
 def format_role_mention(role: str) -> str:
     """Formata a menção de cargo para o padrão correto do GameVox/Discord."""
     role = role.strip()
     if not role:
         return ""
-    # Se o usuário passou apenas números (o ID do cargo, ex: 1573843625446313984)
     if role.isdigit():
         return f"<@&{role}>"
-    # Se já está no formato de tag <@&ID> ou é @everyone/@here
     if role.startswith("<@&") or role in ("@everyone", "@here"):
         return role
-    # Se digitou sem o @ (ex: FreeStuff)
     if not role.startswith("@") and not role.startswith("<"):
         return f"@{role}"
     return role
 
 def build_embed(giveaway: Dict[str, Any]) -> Dict[str, Any]:
-    """Cria a estrutura de Embed compatível com GameVox/Discord."""
+    """Cria a estrutura de Embed compatível com GameVox."""
     title = giveaway.get("title", "Jogo Grátis")
     worth = giveaway.get("worth", "N/A")
     platforms = giveaway.get("platforms", "PC")
@@ -75,7 +69,7 @@ def build_embed(giveaway: Dict[str, Any]) -> Dict[str, Any]:
     embed = {
         "title": f"🎁 [GRÁTIS] {title}",
         "url": claim_url,
-        "description": f"{description}\n\n👉 **[Clique aqui para resgatar o jogo]({claim_url})**",
+        "description": f"{description}\n\n👉 **Resgatar jogo:**\n{claim_url}",
         "color": color,
         "fields": [
             {
@@ -124,7 +118,6 @@ def send_giveaway_webhook(webhook_url: str, giveaway: Dict[str, Any], role_menti
     if role_mention:
         formatted = format_role_mention(role_mention)
         payload["content"] = f"{formatted} Novo jogo gratuito disponível!"
-        # Permite menção ativa de cargos (notificação/som)
         payload["allowed_mentions"] = {
             "parse": ["roles", "users", "everyone"]
         }
