@@ -22,11 +22,23 @@ def detect_store_color(platforms: str, title: str) -> int:
         return 0x1B2838  # Azul marinho Steam
     elif "gog" in text:
         return 0x862295  # Roxo GOG
-    elif "prime" in text or "amazon" in text:
-        return 0x00A8E1  # Azul claro Prime
-    elif "ubisoft" in text:
-        return 0x0070FF  # Azul Ubisoft
     return 0x10B981      # Verde Esmeralda (Padrão 100% OFF)
+
+def format_role_mention(role: str) -> str:
+    """Formata a menção de cargo para o padrão correto do GameVox/Discord."""
+    role = role.strip()
+    if not role:
+        return ""
+    # Se o usuário passou apenas números (o ID do cargo, ex: 1573843625446313984)
+    if role.isdigit():
+        return f"<@&{role}>"
+    # Se já está no formato de tag <@&ID> ou é @everyone/@here
+    if role.startswith("<@&") or role in ("@everyone", "@here"):
+        return role
+    # Se digitou sem o @ (ex: FreeStuff)
+    if not role.startswith("@") and not role.startswith("<"):
+        return f"@{role}"
+    return role
 
 def build_embed(giveaway: Dict[str, Any]) -> Dict[str, Any]:
     """Cria a estrutura de Embed compatível com GameVox/Discord."""
@@ -37,18 +49,14 @@ def build_embed(giveaway: Dict[str, Any]) -> Dict[str, Any]:
     claim_url = giveaway.get("open_giveaway_url") or giveaway.get("gamerpower_url", "")
     description = giveaway.get("description", "")
     
-    # Se a descrição for muito longa, resume
     if len(description) > 300:
         description = description[:297] + "..."
 
-    # Formata data de expiração se disponível
     validade_str = "Por tempo limitado"
     if end_date and end_date.lower() != "n/d":
         validade_str = end_date
 
-    # Preço original riscado
     preco_formatado = f"~~{worth}~~ **100% GRÁTIS**" if worth and worth != "N/A" else "**100% GRÁTIS**"
-
     color = detect_store_color(platforms, title)
 
     embed = {
@@ -79,7 +87,6 @@ def build_embed(giveaway: Dict[str, Any]) -> Dict[str, Any]:
         }
     }
 
-    # Imagem de destaque (banner do jogo)
     image_url = giveaway.get("image") or giveaway.get("thumbnail")
     if image_url:
         embed["image"] = {"url": image_url}
@@ -88,7 +95,7 @@ def build_embed(giveaway: Dict[str, Any]) -> Dict[str, Any]:
 
 def send_giveaway_webhook(webhook_url: str, giveaway: Dict[str, Any], role_mention: str = "") -> Tuple[bool, str]:
     """
-    Envia a notificação do jogo gratuito para o Webhook do GameVox.
+    Envia a notificação do jogo gratuito para o Webhook do GameVox com menção de cargo.
     """
     if not webhook_url:
         return False, "URL do Webhook não configurada no arquivo .env."
@@ -102,7 +109,12 @@ def send_giveaway_webhook(webhook_url: str, giveaway: Dict[str, Any], role_menti
     }
 
     if role_mention:
-        payload["content"] = f"{role_mention} Novo jogo gratuito disponível!"
+        formatted = format_role_mention(role_mention)
+        payload["content"] = f"{formatted} Novo jogo gratuito disponível!"
+        # Permite menção ativa de cargos (notificação/som)
+        payload["allowed_mentions"] = {
+            "parse": ["roles", "users", "everyone"]
+        }
 
     headers = {
         "Content-Type": "application/json",
@@ -113,7 +125,6 @@ def send_giveaway_webhook(webhook_url: str, giveaway: Dict[str, Any], role_menti
         data_json = json.dumps(payload).encode("utf-8")
         if HAS_REQUESTS:
             response = requests.post(webhook_url, json=payload, headers=headers, timeout=15)
-            # 200, 204 No Content são respostas de sucesso no GameVox/Discord
             if response.status_code in [200, 204]:
                 return True, "Enviado com sucesso!"
             else:
@@ -127,16 +138,16 @@ def send_giveaway_webhook(webhook_url: str, giveaway: Dict[str, Any], role_menti
     except Exception as e:
         return False, f"Erro na requisição: {e}"
 
-def send_test_message(webhook_url: str) -> Tuple[bool, str]:
-    """Envia uma mensagem de teste simples para confirmar que o Webhook está ativo."""
+def send_test_message(webhook_url: str, role_mention: str = "") -> Tuple[bool, str]:
+    """Envia uma mensagem de teste simples para confirmar que o Webhook e a menção estão ativos."""
     test_giveaway = {
         "id": 999999,
         "title": "Jogo de Teste (Exemplo de Notificação)",
         "worth": "$29.99",
         "platforms": "PC, Steam, Epic Games",
         "end_date": "Indeterminado",
-        "description": "Se você está vendo esta mensagem no GameVox, seu Webhook está configurado e funcionando perfeitamente!",
+        "description": "Se você está vendo esta mensagem no GameVox com a menção de cargo, está tudo 100% configurado!",
         "open_giveaway_url": "https://gamevox.com",
         "image": "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800&auto=format&fit=crop&q=80"
     }
-    return send_giveaway_webhook(webhook_url, test_giveaway)
+    return send_giveaway_webhook(webhook_url, test_giveaway, role_mention=role_mention)

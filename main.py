@@ -96,7 +96,7 @@ def main():
             log("❌ ERRO: Configure a GAMEVOX_WEBHOOK_URL no arquivo .env antes de testar.")
             return
         log("🚀 Enviando mensagem de teste para o Webhook do GameVox...")
-        success, msg = webhook.send_test_message(config.GAMEVOX_WEBHOOK_URL)
+        success, msg = webhook.send_test_message(config.GAMEVOX_WEBHOOK_URL, role_mention=config.NOTIFY_ROLE)
         if success:
             log("✅ Sucesso! Mensagem de teste enviada. Verifique o seu canal no GameVox.")
         else:
