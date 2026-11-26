@@ -19,6 +19,16 @@
       "published_date": "2026-11-19 11:00:14",
       "end_date": "2026-11-26 23:59:00",
       "last_notified_at": "2026-11-22 00:48:31"
+    },
+    "3857": {
+      "id": 3857,
+      "title": "Bread and Fred (Epic Games) Giveaway",
+      "normalized_title": "bread and fred",
+      "worth": "$14.99",
+      "platforms": "PC, Epic Games Store",
+      "published_date": "2026-11-26 11:01:56",
+      "end_date": "2026-12-03 23:59:00",
+      "last_notified_at": "2026-11-26 21:49:02"
     }
   }
 }
